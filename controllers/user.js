@@ -3,6 +3,7 @@ const User = require("../models/user")
 const bcrypt = require("bcrypt")
 const mongoosePagination = require("mongoose-pagination")
 const fs = require("fs")
+const path = require ("path")
 
 // importar servicios
 const jwt = require("../services/jwt")
@@ -66,7 +67,7 @@ const register = (req, res) => {
                     message: "No se ha guardado el usuario"
                 });
             }
-            if(userSave){
+            if (userSave) {
                 return res.status(200).send({
                     status: 'succes',
                     message: "Usuario Resgistrado con éxito"
@@ -102,10 +103,10 @@ const login = async (req, res) => {
     // Utiliza el modelo  User  y el método  findOne  para buscar un documento 
     // que coincida con el correo electrónico proporcionado en el parámetro params.email . 
     try {
-        let user = await User.findOne({ 
-            email: params.email 
-            })
-            // .select({ "password": 0 }).exec();
+        let user = await User.findOne({
+            email: params.email
+        })
+        // .select({ "password": 0 }).exec();
 
         if (!user) {
             return res.status(404).send({
@@ -116,7 +117,7 @@ const login = async (req, res) => {
 
         //Comprobar su contraseña 
         let pwd = bcrypt.compareSync(params.password, user.password)
-        if(!pwd){
+        if (!pwd) {
             return res.status(404).send({
                 status: "Error",
                 message: "Usuario o contraseña no válido"
@@ -141,7 +142,7 @@ const login = async (req, res) => {
             token
         });
 
-    }catch (error) {
+    } catch (error) {
         return res.status(404).send({
             status: "error",
             message: "No existe el usuario1",
@@ -199,7 +200,7 @@ const list = async (req, res) => {
             total,
             page,
             itemsPerPage,
-            pages: Math.ceil(total/itemsPerPage)
+            pages: Math.ceil(total / itemsPerPage)
         })
     } catch (error) {
         return res.status(500).json({
@@ -209,7 +210,7 @@ const list = async (req, res) => {
         })
     }
 }
-const update = async(req, res) => {
+const update = async (req, res) => {
     // Recoger info del usuario a actualizar
     let userIdentity = req.user
     let userToUpdate = req.body
@@ -230,12 +231,12 @@ const update = async(req, res) => {
         // then entonces
     }).exec().then(async (users) => {
         let userIsset = false
-        
-        
+
+
         users.forEach(user => {
-            if(user && user._id != userIdentity.id) userIsset = true
+            if (user && user._id != userIdentity.id) userIsset = true
         });
-        
+
 
         // si existe un usuario con el mismo nick o email
         if (userIsset == true) {
@@ -244,12 +245,12 @@ const update = async(req, res) => {
                 message: "El usuario ya existe",
             });
         }
-        
+
         // cifrar la contraseña 
         //en el hash el texto que vamos a cifrar que en este caso será la contraseña
         // el 10 significa que va a cifrar la contraseña 10 veces
         // pwd es la contraseña ya cifrada
-        if (userToUpdate.password ) {
+        if (userToUpdate.password) {
             let pwd = await bcrypt.hash(userToUpdate.password, 10)
             userToUpdate.password = pwd
         }
@@ -270,29 +271,29 @@ const update = async(req, res) => {
             })
         } catch (error) {
             // Devolver respuesta
-        return res.status(500).json({
-            status: 'error',
-            message: 'Error al actualizar',
-        })
+            return res.status(500).json({
+                status: 'error',
+                message: 'Error al actualizar',
+            })
         }
     })
 }
-const upload = async(req,res)=>{
-    try{
-    // Recoger el fichero de imagen y comprobar que existe
-    if(!req.file){
-        return res.status(404).send({
-            status:'error',
-            message:"No se ha subido ninguna imagen"
-        })
-    }
-    let image = req.file.originalname
-    // Sacar extension del archivo
-    const imageSplit = image.split('.')
-    const extension = imageSplit[1];
+const upload = async (req, res) => {
+    try {
+        // Recoger el fichero de imagen y comprobar que existe
+        if (!req.file) {
+            return res.status(404).send({
+                status: 'error',
+                message: "No se ha subido ninguna imagen"
+            })
+        }
+        let image = req.file.originalname
+        // Sacar extension del archivo
+        const imageSplit = image.split('.')
+        const extension = imageSplit[1];
         try {
             // comprobar extension
-            if (extension != "png" && extension != "jpg" && extension!= "jpeg" && extension != "gif") {
+            if (extension != "png" && extension != "jpg" && extension != "jpeg" && extension != "gif") {
 
                 // Borrar archivo subido
                 let filePath = req.file.path;
@@ -302,82 +303,106 @@ const upload = async(req,res)=>{
                     message: "Extensión de fichero no válida",
                     fileDeleted
                 })
-            }else (extension == "png" || extension == "jpg" || extension == "jpeg" || extension == "gif") 
-                // Guardar en BD
-                let avatarUpload = await User.findByIdAndUpdate(
-                    { _id: req.user.id },
-                    { image: newImageName },
-                    { new: true }
-                )
-                return res.status(200).json({
-                    status :'success',
-                    user:avatarUpload
-                })
-                
-            
-        }catch (error){
+            } else (extension == "png" || extension == "jpg" || extension == "jpeg" || extension == "gif")
+            // Guardar en BD
+            let avatarUpload = await User.findByIdAndUpdate(
+                { _id: req.user.id },
+                { image: newImageName },
+                { new: true }
+            )
+            return res.status(200).json({
+                status: 'success',
+                user: avatarUpload
+            })
+
+
+        } catch (error) {
             console.error("Extensión no válida", error)
         }
-    
 
-    // Conseguir el nombre del archivo 
-    const user = await User.findById(req.user.id)
-    const currentImage = user.image
-    // Eliminar físicamente el archivo actual si existe
-    try{
-        if(currentImage){
-            /*La función  normalize  en este fragmento de código se utiliza para
-            convertir la ruta de la imagen actual a una ruta normalizada. 
-            Esto significa que la ruta se convertirá a una forma que sea más fácil de leer y entender.*/ 
-            const normalizedCurrentImage = path.normalize(currentImage)
-            /*La función  join  en este fragmento de código se utiliza para unir varias cadenas de texto en una sola cadena.
-            En este caso, la función  join  se utiliza para unir la ruta del directorio actual ( __dirname ),
-            la ruta de la carpeta de subida de avatares ( ../uploads/avatars ) y la ruta de la imagen normalizada ( normalizedCurrentImage ). 
-            La variable  __dirname  en este fragmento de código representa la ruta del directorio actual. 
-            Esta variable se utiliza para garantizar que la ruta completa a la imagen sea correcta, 
-            incluso si el directorio actual cambia.
-            */
-            const currentImagePath = path.join(__dirname, '../uploads/avatars', normalizedCurrentImage)
-            // Eliminar si no cumple las extensiones
-            fs.unlink(currentImagePath, (err) => { 
-                err,
-                console.error("Extension del archivo no disponible para éste campo")
-            }) 
+
+        // Conseguir el nombre del archivo 
+        const user = await User.findById(req.user.id)
+        const currentImage = user.image
+        // Eliminar físicamente el archivo actual si existe
+        try {
+            if (currentImage) {
+                /*La función  normalize  en este fragmento de código se utiliza para
+                convertir la ruta de la imagen actual a una ruta normalizada. 
+                Esto significa que la ruta se convertirá a una forma que sea más fácil de leer y entender.*/
+                const normalizedCurrentImage = path.normalize(currentImage)
+                /*La función  join  en este fragmento de código se utiliza para unir varias cadenas de texto en una sola cadena.
+                En este caso, la función  join  se utiliza para unir la ruta del directorio actual ( __dirname ),
+                la ruta de la carpeta de subida de avatares ( ../uploads/avatars ) y la ruta de la imagen normalizada ( normalizedCurrentImage ). 
+                La variable  __dirname  en este fragmento de código representa la ruta del directorio actual. 
+                Esta variable se utiliza para garantizar que la ruta completa a la imagen sea correcta, 
+                incluso si el directorio actual cambia.
+                */
+                const currentImagePath = path.join(__dirname, '../uploads/avatars', normalizedCurrentImage)
+                // Eliminar si no cumple las extensiones
+                fs.unlink(currentImagePath, (err) => {
+                    err,
+                        console.error("Extension del archivo no disponible para éste campo")
+                })
+            }
+        } catch (error) {
+            console.error("Error al intentar eliminar el archivo anterior", error)
         }
-    }catch(error){
-        console.error("Error al intentar eliminar el archivo anterior" , error)
-    }
-    
-    // Conseguir el nombre del archivo subido
-    const newImageName = req.file.filename
 
-    //  Actualizar el Avatar en la base de datos
-    const userUpdate = await User.findByIdAndUpdate(
-        { _id: req.user.id },
-        { image: newImageName },
-        { new: true }
-    )
+        // Conseguir el nombre del archivo subido
+        const newImageName = req.file.filename
 
-    if(!userUpdate){
-        return res.status(500).send({
-            status: "error",
-            message: "Error en la subida"
+        //  Actualizar el Avatar en la base de datos y guardarlo.
+        const userUpdate = await User.findByIdAndUpdate(
+            { _id: req.user.id },
+            { image: newImageName },
+            { new: true }
+        )
+
+        if (!userUpdate) {
+            return res.status(500).send({
+                status: "error",
+                message: "Error en la subida"
+            })
+        }
+        // Devolver respuesta
+        return res.status(200).json({
+            status: "success",
+            user: userUpdate,
+            file: req.file
         })
-    }
-    // Devolver respuesta
-    return res.status(200).json({
-        status: "success",
-        user: userUpdate,
-        file:req.file
-    })
-    
-    }catch(error){
+
+    } catch (error) {
         console.error("Error en la subida del avatar", error)
         return res.status(500).send({
-            status:"error",
+            status: "error",
             message: "Error en la subida del avatar1"
         })
     }
+}
+const avatar = async (req, res) => {
+    // Sacar el parámetro de la url
+    const file = req.params.file
+
+    // Montar el path real de la imagen
+    const filePath = "./uploads/avatars/"+file;
+    // Comprobar que existe
+    fs.stat(filePath, (error, exists) => {
+        if (!exists) {
+            return res.status(404).send({
+                status: "error",
+                message: 'La imagen no existe'
+            })
+        }
+
+        // Devolver un file
+        // sendFile metodo de Express// Path.resolve importamos arriba librería path
+        return res.sendFile(path.resolve(filePath))
+    })
+
+    try {
+
+    } catch { }
 }
 
 
@@ -386,9 +411,10 @@ const upload = async(req,res)=>{
 module.exports = {
     pruebaUser,
     register,
-    login, 
+    login,
     profile,
     list,
     update,
-    upload
+    upload,
+    avatar
 }
