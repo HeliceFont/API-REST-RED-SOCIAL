@@ -286,12 +286,13 @@ const upload = async(req,res)=>{
             message:"No se ha subido ninguna imagen"
         })
     }
+    let image = req.file.originalname
     // Sacar extension del archivo
-    const imageSplit = req.file.originalname.split('.')
+    const imageSplit = image.split('.')
     const extension = imageSplit[1];
         try {
             // comprobar extension
-            if (extension != "png" || extension != "jpg" || extension != "jpeg" || extension != "gif") {
+            if (extension != "png" && extension != "jpg" && extension && "jpeg" && extension != "gif") {
 
                 // Borrar archivo subido
                 let filePath = req.file.path;
@@ -325,8 +326,19 @@ const upload = async(req,res)=>{
     // Eliminar físicamente el archivo actual si existe
     try{
         if(currentImage){
+            /*La función  normalize  en este fragmento de código se utiliza para
+            convertir la ruta de la imagen actual a una ruta normalizada. 
+            Esto significa que la ruta se convertirá a una forma que sea más fácil de leer y entender.*/ 
             const normalizedCurrentImage = path.normalize(currentImage)
+            /*La función  join  en este fragmento de código se utiliza para unir varias cadenas de texto en una sola cadena.
+            En este caso, la función  join  se utiliza para unir la ruta del directorio actual ( __dirname ),
+            la ruta de la carpeta de subida de avatares ( ../uploads/avatars ) y la ruta de la imagen normalizada ( normalizedCurrentImage ). 
+            La variable  __dirname  en este fragmento de código representa la ruta del directorio actual. 
+            Esta variable se utiliza para garantizar que la ruta completa a la imagen sea correcta, 
+            incluso si el directorio actual cambia.
+            */
             const currentImagePath = path.join(__dirname, '../uploads/avatars', normalizedCurrentImage)
+            // Eliminar si no cumple las extensiones
             fs.unlink(currentImagePath, (err) => { 
                 err,
                 console.error("Extension del archivo no disponible para éste campo")
