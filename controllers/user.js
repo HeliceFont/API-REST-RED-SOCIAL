@@ -292,7 +292,7 @@ const upload = async(req,res)=>{
     const extension = imageSplit[1];
         try {
             // comprobar extension
-            if (extension != "png" && extension != "jpg" && "jpeg" && extension != "gif") {
+            if (extension != "png" && extension != "jpg" && extension!= "jpeg" && extension != "gif") {
 
                 // Borrar archivo subido
                 let filePath = req.file.path;
