@@ -8,6 +8,7 @@ const check = require("../middlewares/auth")
 // para posteriormente usar el controlador al que hemos dado el nombre de pruebaUser
 router.get("/prueba-follow", FollowController.pruebaFollow)
 router.post("/save", check.auth, FollowController.save)
+router.delete("/unfollow/:id", check.auth, FollowController.unfollow)
 
 // Exportar router
 module.exports = router

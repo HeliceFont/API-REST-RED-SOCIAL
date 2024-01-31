@@ -317,6 +317,7 @@ const upload = async (req, res) => {
 
 
         } catch (error) {
+            console.log(error)
             console.error("Extensión no válida", error)
         }
 

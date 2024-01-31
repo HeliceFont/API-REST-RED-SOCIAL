@@ -52,8 +52,36 @@ const save = async (req, res) =>{
     
 }
 
-// Acción de eliminar un follow (acción dejar de seguir)
+// Accion de borrar un follow / dejar de seguir
+const unfollow = async (req, res) => {
+    try {
+        //Who am i
+        const logged_user_id = req.user.id;
+        //Who i want to stop following
+        const followed_user = await User.findById(req.params.id).exec();
+        //Save in bbdd
+        let follow_relation = await follow.findOneAndDelete({
+            user: logged_user_id,
+            followed: followed_user._id,
+        });
 
+        if (!follow_relation)
+            throw {
+                statusCode: 500,
+                message: "Couldn't find this following relation",
+            };
+
+        return res.status(200).send({
+            status: "Success",
+            message: `Succesfully unfollowed ${followed_user.nick}`,
+        });
+    } catch (error) {
+        return res.status(error.statusCode || "500").send({
+            status: "Error",
+            message: error.message || "There was an error while unfollowing the user",
+        });
+    }
+};
 // Accion de listado de uruarios que estoy siguiendo
 
 // Acción Listado de usuarios que me siguen
@@ -62,5 +90,6 @@ const save = async (req, res) =>{
 // Exportar acciones
 module.exports ={
     pruebaFollow, 
-    save
+    save,
+    unfollow
 }
