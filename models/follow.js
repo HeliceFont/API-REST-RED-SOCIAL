@@ -5,6 +5,10 @@ const FollowSchema = Schema({
         type: Schema.ObjectId, 
         ref: "User"
     },
+    follow:{
+        type: Schema.ObjectId,
+        ref: "User"
+    },
     followed:{
         type: Schema.ObjectId,
         ref: "User"
