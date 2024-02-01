@@ -2,10 +2,13 @@
 const follow = require("../models/follow")
 const User = require("../models/user")
 
+// importar mongoose paginate
+const mongoosePaginate = require("mongoose-pagination")
+
 
 
 // Acciones de prueba
-const pruebaFollow =(req, res) => {
+const pruebaFollow = (req, res) => {
     return res.status(200).send({
         message: "mensaje enviado desde: controllers/follow.js"
     })
@@ -76,28 +79,54 @@ const unfollow = async (req, res) => {
     }
 };
 // Accion de listado de uruarios que cualquier usuario está siguiendo
-const following = (req, res) =>{
-    return res.status(200).send({
-        status: "succes",
-        message: "Listado de usuarios que estoy siguiendo",
+const following = async (req, res) => {
 
-    })
+    try {
+        // Sacar el id del usuario identificado
+        let userId = req.params.id
+        // Comprobar si el id del usuario por parametro en url
+        const followed_user = await User.findById(req.params.id).exec();
+        // Comprobar si me llega la página, sino la página 1 
+        let page = 1
+
+        if (req.params.page) page = req.params.page
+
+        // Usuarios por página quiero mostrar(Para hacer esto importar mongoose)
+        const itemPerPage = 5
+
+        // find a follow, popular datos de los usuario y paginar con mongoose paginate
+        follow.find({ user: userId }).then((follows) => {
+            // Listado de usuarios que hay en común con 2 usuarios
+            // Sacar Array de ids de los amigos en común
+            return res.status(200).send({
+                status: "succes",
+                message: "Listado de usuarios que me siguen",
+                follows
+            })
+        })
+    } catch (error) {
+        return res.status(error || "500").send({
+            status: "Error",
+            message: error.message || "No se encontro datos en el listado followers",
+        });
+
+    }
 }
 
 // Acción Listado de usuarios que siguen a cualquier otro usuario
-const followed = (req, res) =>{
-    return res.status(200).send({
-        status: "succes",
-        message: "Listado de usuarios que me siguen",
-
-    })
+const followers = async (req, res) => {
+            return res.status(200).send({
+                status: "succes",
+                message: "Listado de usuarios que me siguen",
+            })
+        
 }
 
 // Exportar acciones
-module.exports ={
-    pruebaFollow, 
+module.exports = {
+    pruebaFollow,
     save,
     unfollow,
     following,
-    followed
+    followers
 }
