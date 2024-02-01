@@ -12,44 +12,37 @@ const pruebaFollow =(req, res) => {
 }
 
 // Acción de guardar un follow (acción de seguir)
-const save = async (req, res) =>{
+const save = async (req, res) => {
     // conseguir datos que llegan por el body
     const params = req.body
 
     //sacar id del usuario identificado 
     const identity = req.user
-    
+
     // Crear objeto con modelo follow
     let userToFollow = new follow({
         user: identity.id,
         followed: params.followed
     })
-    
+    // Guardar objeto en Base de datos // followStored guardado
+    userToFollow.save().then((followStored) => {
 
-    
-        // Guardar objeto en Base de datos // followStored guardado
-        userToFollow.save().then(( followStored) => {
-            
-            if (!userToFollow) {
-                return res.status(404).send({
-                    status: "error",
-                    message: "No se ha podido seguir al usuario"
-                })
-            }
-            if(userToFollow){
-                return res.status(200).send({
-                    status: "succes",
-                    identity: req.user,
-                    follow: followStored,
-                    message: "Se ha guardado el usuario",
-                    
-                }) 
-            }
-        })
-        
+        if (!userToFollow) {
+            return res.status(404).send({
+                status: "error",
+                message: "No se ha podido seguir al usuario"
+            })
+        }
+        if (userToFollow) {
+            return res.status(200).send({
+                status: "succes",
+                identity: req.user,
+                follow: followStored,
+                message: "Se ha guardado el usuario",
 
-    
-    
+            })
+        }
+    })
 }
 
 // Accion de borrar un follow / dejar de seguir
@@ -76,20 +69,35 @@ const unfollow = async (req, res) => {
             message: `Succesfully unfollowed ${followed_user.nick}`,
         });
     } catch (error) {
-        return res.status(error.statusCode || "500").send({
+        return res.status(error || "500").send({
             status: "Error",
             message: error.message || "There was an error while unfollowing the user",
         });
     }
 };
-// Accion de listado de uruarios que estoy siguiendo
+// Accion de listado de uruarios que cualquier usuario está siguiendo
+const following = (req, res) =>{
+    return res.status(200).send({
+        status: "succes",
+        message: "Listado de usuarios que estoy siguiendo",
 
-// Acción Listado de usuarios que me siguen
+    })
+}
 
+// Acción Listado de usuarios que siguen a cualquier otro usuario
+const followed = (req, res) =>{
+    return res.status(200).send({
+        status: "succes",
+        message: "Listado de usuarios que me siguen",
+
+    })
+}
 
 // Exportar acciones
 module.exports ={
     pruebaFollow, 
     save,
-    unfollow
+    unfollow,
+    following,
+    followed
 }
