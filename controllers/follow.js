@@ -85,7 +85,7 @@ const following = async (req, res) => {
         // Sacar el id del usuario identificado
         let userId = req.params.id
         // Comprobar si el id del usuario por parametro en url
-        const followed_user = await User.findById(req.params.id).exec();
+        const total = await follow.countDocuments({ user: userId })
         // Comprobar si me llega la página, sino la página 1 
         let page = 1
 
@@ -95,13 +95,18 @@ const following = async (req, res) => {
         const itemPerPage = 5
 
         // find a follow, popular datos de los usuario y paginar con mongoose paginate
-        follow.find({ user: userId }).then((follows) => {
+        // usamos populate para quitar los id de sus campos "user followed" y mostrar el stringo de lo campos y quitar password role y __v
+        follow.find({ user: userId })
+        .populate("user followed", "-password -role -__v")
+        .paginate(page, itemPerPage, )
+        .then((follows,) => {
             // Listado de usuarios que hay en común con 2 usuarios
             // Sacar Array de ids de los amigos en común
             return res.status(200).send({
                 status: "succes",
                 message: "Listado de usuarios que me siguen",
-                follows
+                follows,
+                total
             })
         })
     } catch (error) {
