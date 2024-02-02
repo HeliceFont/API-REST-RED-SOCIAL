@@ -105,15 +105,15 @@ const following = async (req, res) => {
             // Listado de usuarios que sigue otro usuario
             // Sacar Array de ids de los amigos en común
             let followUserIds = await followService.followUserIds(userId)
-            console.log(followUserIds.following);
-
+            
             return res.status(200).send({
                 status: "succes",
                 message: "Listado de usuarios que me siguen",
                 follows,
                 total,
                 pages: Math.ceil(total/itemPerPage),
-                user_following: followUserIds.following
+                user_following: followUserIds.following,
+                user_follow_me: followUserIds.followers
             })
         })
     } catch (error) {
