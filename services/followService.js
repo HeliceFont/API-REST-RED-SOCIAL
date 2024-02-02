@@ -43,6 +43,34 @@ const followUserIds = async (identityUserId) => {
 
 const followThisUser = async (identityUserId, profileUserId) => {
     // Implementa la lógica para seguir al usuario con el profileUserId
+    // Sacar la información de Seguimiento
+    let following
+    try {
+        // si estoy siguiendo 
+        following = await follow.findOne({ "user": identityUserId, "followed": profileUserId })
+            .select({"followed": 1, "_id":0})
+            .exec();
+            
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+
+    let followers 
+    try {
+        // Me sigue
+        followers = await follow.findOne({ "user": profileUserId, "followed": identityUserId,  })
+            .select({"user": 1, "_id":0})
+            .exec();
+            
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+    return {
+        following,
+        followers
+    }
 };
 
 module.exports = {

@@ -7,7 +7,7 @@ const path = require ("path")
 
 // importar servicios
 const jwt = require("../services/jwt")
-
+const followService = require("../services/followService")
 // Acciones de prueba
 const pruebaUser = (req, res) => {
     return res.status(200).send({
@@ -162,12 +162,13 @@ const profile = async (req, res) => {
             message: "El Usuario no Existe!"
         })
     }
-
-    // Posteriormente: Devolver informacional de Follow
+    // Info de seguimiento
+    const followInfo = await followService.followThisUser(req.user.id, id)
     // Devolver el resultado
     return res.status(200).send({
         status: "success",
-        user: userProfile
+        user: userProfile,
+        followInfo
     })
 }
 
