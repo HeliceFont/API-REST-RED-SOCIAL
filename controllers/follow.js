@@ -106,7 +106,8 @@ const following = async (req, res) => {
                 status: "succes",
                 message: "Listado de usuarios que me siguen",
                 follows,
-                total
+                total,
+                pages: Math.ceil(total/itemPerPage)
             })
         })
     } catch (error) {
