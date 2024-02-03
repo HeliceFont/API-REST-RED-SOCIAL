@@ -98,24 +98,24 @@ const following = async (req, res) => {
 
         // find a follow, popular datos de los usuario y paginar con mongoose paginate
         // usamos populate para quitar los id de sus campos "user followed" y mostrar el stringo de lo campos y quitar password role y __v
-        follow.find({ user: userId })
-        .populate("user followed", "-password -role -__v")
-        .paginate(page, itemPerPage)
-        .then(async(follows) => {
-            // Listado de usuarios que sigue otro usuario
-            // Sacar Array de ids de los amigos en común
-            let followUserIds = await followService.followUserIds(userId)
-            
-            return res.status(200).send({
-                status: "succes",
-                message: "Listado de usuarios que me siguen",
-                follows,
-                total,
-                pages: Math.ceil(total/itemPerPage),
-                user_following: followUserIds.following,
-                user_follow_me: followUserIds.followers
+        follow.find()
+            .populate("user followed", "-password -role -__v")
+            .paginate(page, itemPerPage)
+            .then(async (follows) => {
+                // Listado de usuarios que sigue otro usuario
+                // Sacar Array de ids de los amigos en común
+                let followUserIds = await followService.followUserIds(userId)
+
+                return res.status(200).send({
+                    status: "succes",
+                    message: "Listado de usuarios que sigo",
+                    follows,
+                    total,
+                    pages: Math.ceil(total / itemPerPage),
+                    user_following: followUserIds.following,
+                    user_follow_me: followUserIds.followers
+                })
             })
-        })
     } catch (error) {
         return res.status(error || "500").send({
             status: "Error",
@@ -127,11 +127,47 @@ const following = async (req, res) => {
 
 // Acción Listado de usuarios que siguen a cualquier otro usuario
 const followers = async (req, res) => {
-            return res.status(200).send({
-                status: "succes",
-                message: "Listado de usuarios que me siguen",
+    try {
+        // Sacar el id del usuario identificado
+        let userId = req.user.id
+        // Comprobar si el id del usuario por parametro en url
+        const total = await follow.countDocuments({ user: userId })
+        // Comprobar si me llega la página, sino la página 1 
+        let page = 1
+
+        if (req.params.page) page = req.params.page
+
+        // Usuarios por página quiero mostrar(Para hacer esto importar mongoose)
+        const itemPerPage = 5
+
+        // find a follow, popular datos de los usuario y paginar con mongoose paginate
+        // usamos populate para quitar los id de sus campos "user followed" y mostrar el stringo de lo campos y quitar password role y __v
+        follow.find()
+            .populate("user followed", "-password -role -__v")
+            .paginate(page, itemPerPage)
+            .then(async (follows) => {
+                
+                // Sacar Array de ids de los amigos en común
+                let followUserIds = await followService.followUserIds(userId)
+                console.log(userId)
+
+                return res.status(200).send({
+                    status: "succes",
+                    message: "Listado de usuarios que me siguen",
+                    follows,
+                    total,
+                    pages: Math.ceil(total / itemPerPage),
+                    user_following: followUserIds.following,
+                    user_follow_me: followUserIds.followers
+                })
             })
-        
+    } catch (error) {
+        return res.status(error || "500").send({
+            status: "Error",
+            message: error.message || "No se encontro datos en el listado followers",
+        });
+    }
+
 }
 
 // Exportar acciones

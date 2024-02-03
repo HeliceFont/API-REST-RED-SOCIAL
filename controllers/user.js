@@ -3,7 +3,7 @@ const User = require("../models/user")
 const bcrypt = require("bcrypt")
 const mongoosePagination = require("mongoose-pagination")
 const fs = require("fs")
-const path = require ("path")
+const path = require("path")
 
 // importar servicios
 const jwt = require("../services/jwt")
@@ -168,7 +168,8 @@ const profile = async (req, res) => {
     return res.status(200).send({
         status: "success",
         user: userProfile,
-        followInfo
+        following: followInfo.following,
+        follower: followInfo.followers
     })
 }
 
@@ -193,7 +194,8 @@ const list = async (req, res) => {
             .sort('_id')
             .skip(startIndex)
             .limit(itemsPerPage)
-
+        // Sacar Array de ids de los seguimientos
+        let followUserIds = await followService.followUserIds(req.params.id)
         // Devolver la respuesta
         return res.status(200).json({
             status: 'success',
@@ -201,7 +203,9 @@ const list = async (req, res) => {
             total,
             page,
             itemsPerPage,
-            pages: Math.ceil(total / itemsPerPage)
+            pages: Math.ceil(total / itemsPerPage),
+            user_following: followUserIds.following,
+            user_follow_me: followUserIds.followers
         })
     } catch (error) {
         return res.status(500).json({
@@ -387,7 +391,7 @@ const avatar = async (req, res) => {
     const file = req.params.file
 
     // Montar el path real de la imagen
-    const filePath = "./uploads/avatars/"+file;
+    const filePath = "./uploads/avatars/" + file;
     // Comprobar que existe
     fs.stat(filePath, (error, exists) => {
         if (!exists) {

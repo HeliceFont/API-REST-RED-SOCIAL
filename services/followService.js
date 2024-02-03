@@ -48,8 +48,6 @@ const followThisUser = async (identityUserId, profileUserId) => {
     try {
         // si estoy siguiendo 
         following = await follow.findOne({ "user": identityUserId, "followed": profileUserId })
-            .select({"followed": 1, "_id":0})
-            .exec();
             
     } catch (error) {
         console.error(error);
@@ -60,8 +58,6 @@ const followThisUser = async (identityUserId, profileUserId) => {
     try {
         // Me sigue
         followers = await follow.findOne({ "user": profileUserId, "followed": identityUserId,  })
-            .select({"user": 1, "_id":0})
-            .exec();
             
     } catch (error) {
         console.error(error);
