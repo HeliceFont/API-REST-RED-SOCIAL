@@ -3,7 +3,8 @@ const { Schema, model } = require("mongoose")
 const PublicationSchema =Schema ({
     user:{
         type: Schema.ObjectId,
-        ref: "User"
+        ref: "User",
+        required:true
     },
     text:{
         type: String,
