@@ -191,6 +191,7 @@ const list = async (req, res) => {
     //  Realizar la consulta con Mongo para obtener los usuarios de la página actual
     try {
         const users = await User.find()
+        .select("-password -email -role -__v")
             .sort('_id')
             .skip(startIndex)
             .limit(itemsPerPage)

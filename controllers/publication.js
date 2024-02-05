@@ -270,16 +270,11 @@ const feed = async (req, res) => {
             .limit(itemsPerPage)
             .exec();
 
-        if (publications.length === 0) {
-            return res.status(200).send({
-                status: "success",
+        if (!publications) {
+            return res.status(500).send({
+                status: "error",
                 message: 'No hay publicaciones de tus seguidores',
                 page,
-                totalPages,
-                totalPublications,
-                following: myFollows.following,
-                publications,
-
             });
         }
 
