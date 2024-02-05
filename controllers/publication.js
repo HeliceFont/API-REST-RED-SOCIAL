@@ -274,22 +274,24 @@ const feed = async (req, res) => {
             return res.status(200).send({
                 status: "success",
                 message: 'No hay publicaciones de tus seguidores',
+                page,
                 totalPages,
                 totalPublications,
                 following: myFollows.following,
                 publications,
-                
+
             });
         }
 
         return res.status(200).send({
             status: "success",
             message: 'Feed de publicaciones',
+            page,
             totalPages,
             totalPublications,
             following: myFollows.following,
             publications,
-            
+
         });
     } catch (error) {
         console.error(error);
