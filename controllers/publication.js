@@ -116,18 +116,18 @@ const user = async (req, res) => {
 
         // Utilizar async/await y la función de Mongoose para paginar
         const publications = await Publication.find({ "user": userId })
-            .sort( "-created_at" ) // Ordenar por fecha de creación descendente
+            .sort("-created_at") // Ordenar por fecha de creación descendente
             .skip((page - 1) * itemsPerPage)
             .limit(itemsPerPage)
             .populate("user", '-password -__v -role -email')
             .exec();
 
-            if(!publications){
-                return res.status(404).send({
-                    status: "error",
-                    message: "No hay publicaciones que mostrar"
-                })
-            }
+        if (!publications) {
+            return res.status(404).send({
+                status: "error",
+                message: "No hay publicaciones que mostrar"
+            })
+        }
 
         // Devolver Respuesta
         return res.status(200).json({
@@ -137,7 +137,7 @@ const user = async (req, res) => {
             totalPages,
             total,
             publications,
-            
+
         });
 
     } catch (error) {
@@ -148,11 +148,69 @@ const user = async (req, res) => {
         });
     }
 };
+// subir ficheros
+const upload = async (req, res) => {
+    try {
+        const publicationId = req.params.id;
 
+        if (!req.file) {
+            return res.status(404).send({
+                status: 'error',
+                message: "No se ha subido ninguna imagen"
+            });
+        }
+
+        const image = req.file.originalname;
+        const imageSplit = image.split('.');
+        const extension = imageSplit[1].toLowerCase(); // Convertir a minúsculas para comparación sin distinción de mayúsculas
+
+        // Comprobar extensión
+        if (extension !== "png" && extension !== "jpg" && extension !== "jpeg" && extension !== "gif" && extension !== "mp4") {
+            // Borrar archivo subido
+            let filePath = req.file.path;
+            fs.unlinkSync(filePath);
+
+            return res.status(404).send({
+                status: 'error',
+                message: "Extensión de archivo no válida",
+            });
+        }
+
+        // Conseguir el nombre del archivo subido
+        const newImageName = req.file.filename;
+
+        // Actualizar el Avatar en la base de datos y guardarlo
+        const publicationUpdated = await Publication.findByIdAndUpdate(
+            publicationId,
+            { file: newImageName },
+            { new: true }
+        );
+
+        if (!publicationUpdated) {
+            return res.status(500).send({
+                status: "error",
+                message: "Error en la subida"
+            });
+        }
+
+        // Devolver respuesta
+        return res.status(200).json({
+            status: "success",
+            publication: publicationUpdated,
+            file: req.file
+        });
+
+    } catch (error) {
+        console.error("Error en la subida del avatar", error);
+        return res.status(500).send({
+            status: "error",
+            message: "Error en la subida del archivo de la publicación"
+        });
+    }
+};
 
 // Listar publicaciones de un usuario (FEED)
 
-// subir ficheros
 
 // Devolver archivos multimedia
 
@@ -164,5 +222,6 @@ module.exports = {
     save,
     detail,
     remove,
-    user
+    user,
+    upload
 }
