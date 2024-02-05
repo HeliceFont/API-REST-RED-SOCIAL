@@ -405,10 +405,6 @@ const avatar = async (req, res) => {
         // sendFile metodo de Express// Path.resolve importamos arriba librería path
         return res.sendFile(path.resolve(filePath))
     })
-
-    try {
-
-    } catch { }
 }
 
 

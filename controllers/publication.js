@@ -1,5 +1,9 @@
-const publication = require("../models/publication")
+// Importar Módulos
+const fs = require("fs")
+const path= require("path")
+// Importar modelos
 const Publication = require("../models/publication")
+
 
 // Acciones de prueba
 const pruebaPublication = (req, res) => {
@@ -209,10 +213,31 @@ const upload = async (req, res) => {
     }
 };
 
+// Devolver archivos multimedia
+const media = async (req, res) => {
+    // Sacar el parámetro de la url
+    const file = req.params.file
+
+    // Montar el path real de la imagen
+    const filePath = "./uploads/publications/" + file;
+    // Comprobar que existe
+    fs.stat(filePath, (error, exists) => {
+        if (!exists) {
+            return res.status(404).send({
+                status: "error",
+                message: 'La imagen no existe'
+            })
+        }
+
+        // Devolver un file
+        // sendFile metodo de Express// Path.resolve importamos arriba librería path
+        return res.sendFile(path.resolve(filePath))
+    })
+}
 // Listar publicaciones de un usuario (FEED)
 
 
-// Devolver archivos multimedia
+
 
 
 
@@ -223,5 +248,6 @@ module.exports = {
     detail,
     remove,
     user,
-    upload
+    upload, 
+    media
 }
