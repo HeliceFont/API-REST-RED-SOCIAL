@@ -1,8 +1,11 @@
 // Importar Módulos
 const fs = require("fs")
-const path= require("path")
+const path = require("path")
 // Importar modelos
 const Publication = require("../models/publication")
+
+// Importar servicios
+const followService = require("../services/followService")
 
 
 // Acciones de prueba
@@ -235,6 +238,69 @@ const media = async (req, res) => {
     })
 }
 // Listar publicaciones de un usuario (FEED)
+const feed = async (req, res) => {
+    // Sacar el id de un usuario
+    const userId = req.params.id;
+    // Sacar la página actual
+    let page = 1;
+    if (req.params.page) {
+        page = req.params.page;
+    }
+    // Establecer Número de elementos por página
+    let itemsPerPage = 5;
+    // Sacar un Array de ids de usuario que yo sigo como usuario identificado
+    try {
+        const myFollows = await followService.followUserIds(req.user.id);
+
+        // Obtener el número total de publicaciones
+        const totalPublications = await Publication.countDocuments({
+            user: { $in: myFollows.following }
+        });
+
+        // Calcular el total de páginas
+        const totalPages = Math.ceil(totalPublications / itemsPerPage);
+
+        // Find a publicaciones operador $in, ordenar, popolar, paginar
+        const publications = await Publication.find({
+            user: { $in: myFollows.following }
+        })
+            .populate('user text file', '-password -__v -role -email')
+            .sort("-created_at") // Ordenar por fecha de creación descendente
+            .skip((page - 1) * itemsPerPage)
+            .limit(itemsPerPage)
+            .exec();
+
+        if (publications.length === 0) {
+            return res.status(200).send({
+                status: "success",
+                message: 'No hay publicaciones de tus seguidores',
+                totalPages,
+                totalPublications,
+                following: myFollows.following,
+                publications,
+                
+            });
+        }
+
+        return res.status(200).send({
+            status: "success",
+            message: 'Feed de publicaciones',
+            totalPages,
+            totalPublications,
+            following: myFollows.following,
+            publications,
+            
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({
+            status: "error",
+            message: 'No se han listado las publicaciones del feed',
+            error: error.message
+        });
+    }
+};
+
 
 
 
@@ -248,6 +314,7 @@ module.exports = {
     detail,
     remove,
     user,
-    upload, 
-    media
+    upload,
+    media,
+    feed
 }
