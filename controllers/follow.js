@@ -99,7 +99,7 @@ const following = async (req, res) => {
         // find a follow, popular datos de los usuario y paginar con mongoose paginate
         // usamos populate para quitar los id de sus campos "user followed" y mostrar el stringo de lo campos y quitar password role y __v
         follow.find()
-            .populate("user followed", "-password -role -__v")
+            .populate("user followed", "-password -role -__v -email")
             .paginate(page, itemPerPage)
             .then(async (follows) => {
                 // Listado de usuarios que sigue otro usuario
@@ -143,7 +143,7 @@ const followers = async (req, res) => {
         // find a follow, popular datos de los usuario y paginar con mongoose paginate
         // usamos populate para quitar los id de sus campos "user followed" y mostrar el stringo de lo campos y quitar password role y __v
         follow.find()
-            .populate("user followed", "-password -role -__v")
+            .populate("user followed", "-password -role -__v -email")
             .paginate(page, itemPerPage)
             .then(async (follows) => {
                 

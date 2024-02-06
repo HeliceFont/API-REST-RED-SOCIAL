@@ -29,7 +29,8 @@ router.get("/list/:page?", check.auth, UserController.list)
 router.put("/update", check.auth, UserController.update)
 // uploads.single para decir que es una imagen, name del campo "file0"
 router.post("/upload",[check.auth, uploads.single("file0")], UserController.upload)
-router.get("/avatar/:file", check.auth, UserController.avatar)
+router.get("/avatar/:file", UserController.avatar)
+router.get("/counters/:id", check.auth, UserController.counters)
 
 // Exportar router
 module.exports = router
