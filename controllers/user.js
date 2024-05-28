@@ -9,7 +9,10 @@ const path = require("path")
 
 // importar servicios
 const jwt = require("../services/jwt")
-const followService = require("../services/followService")
+const followService = require("../services/followService");
+const { following } = require("./follow");
+const validate = require ("../helpers/validate")
+
 // Acciones de prueba
 const pruebaUser = (req, res) => {
     return res.status(200).send({
@@ -24,13 +27,24 @@ const register = (req, res) => {
     let params = req.body
 
     // Comprobar que llegan los datos (+ validación)
-    if (!params.name || !params.email || !params.email || !params.password || !params.nick) {
+    if (!params.name || !params.email || !params.password || !params.nick) {
         console.log("Validación incorrecta")
         return res.status(400).json({
             status: "error",
             message: "Faltan datos por enviar",
         })
     }
+
+    // Validación avanzada
+    try{
+        validate(params)
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "Validación no superada",
+        })
+    }
+    
 
     // control de usuarios duplicados (consulta)
     User.find({
@@ -40,11 +54,12 @@ const register = (req, res) => {
             { nick: params.nick.toLowerCase() },
         ]
         // then entonces
-    }).then(async (users) => {
+    }).then(async ( users) => {
+        
         // si existe un usuario con el mismo nick o email
-        if (users && users.length >= 1) {
-            return res.status(200).send({
-                status: "success",
+        if (users && users.length >= 0) {
+            return res.status(400).send({
+                status: "error",
                 message: "El usuario ya existe",
             });
         }
@@ -176,14 +191,14 @@ const profile = async (req, res) => {
 }
 
 const list = async (req, res) => {
+    
     // Controlar en que página estamos
     let page = 1
     if (req.params.page) {
         // pasar a numero entero
         page = parseInt(req.params.page);
     }
-
-
+    
 
     // Consulta con mongoose paginate
     const total = await User.countDocuments()
@@ -192,15 +207,20 @@ const list = async (req, res) => {
     const startIndex = (page - 1) * itemsPerPage
     //  Realizar la consulta con Mongo para obtener los usuarios de la página actual
     try {
+        let userId = req.user.id
+
         const users = await User.find()
             .select("-password -email -role -__v")
             .sort('_id')
             .skip(startIndex)
             .limit(itemsPerPage)
+            
         // Sacar Array de ids de los seguimientos
-        let followUserIds = await followService.followUserIds(req.params.id)
+        let followUserIds = await followService.followUserIds(userId)
+        
         // Devolver la respuesta
         return res.status(200).json({
+            
             status: 'success',
             users,
             total,
@@ -208,8 +228,10 @@ const list = async (req, res) => {
             itemsPerPage,
             pages: Math.ceil(total / itemsPerPage),
             user_following: followUserIds.following,
-            user_follow_me: followUserIds.followers
+            user_follow_me: followUserIds.followers,
+            
         })
+        
     } catch (error) {
         return res.status(500).json({
             status: 'error',
@@ -217,6 +239,9 @@ const list = async (req, res) => {
             error
         })
     }
+    
+    
+    
 }
 const update = async (req, res) => {
     // Recoger info del usuario a actualizar
@@ -262,7 +287,7 @@ const update = async (req, res) => {
             let pwd = await bcrypt.hash(userToUpdate.password, 10)
             userToUpdate.password = pwd
         }else{
-            delete userToUpdate.password
+            userToUpdate.password = userIdentity.password
         }
         // Buscar y actualizar
         try {

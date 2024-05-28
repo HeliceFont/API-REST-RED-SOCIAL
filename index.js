@@ -3,6 +3,7 @@ const connection  = require ("./database/connection")
 const express = require ("express")
 const cors = require("cors")
 
+
 // Mensaje de bienvenida
 console.log("API node red social arrancada!! conexión a la base de datos correcta")
 
