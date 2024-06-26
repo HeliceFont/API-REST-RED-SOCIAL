@@ -39,9 +39,11 @@ const register = (req, res) => {
     try{
         validate(params)
     }catch(error){
+        console.error("Error en la validación avanzada:", error)
         return res.status(500).json({
             status: "error",
             message: "Validación no superada",
+            error: error.message,  // Incluye el mensaje de error para más detalles
         })
     }
     
@@ -57,7 +59,7 @@ const register = (req, res) => {
     }).then(async ( users) => {
         
         // si existe un usuario con el mismo nick o email
-        if (users && users.length >= 0) {
+        if (users && users.length > 0) {
             return res.status(400).send({
                 status: "error",
                 message: "El usuario ya existe",
@@ -86,7 +88,7 @@ const register = (req, res) => {
             }
             if (userSave) {
                 return res.status(200).send({
-                    status: 'succes',
+                    status: 'success',
                     message: "Usuario Resgistrado con éxito"
                 })
             }
