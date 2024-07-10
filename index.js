@@ -3,6 +3,9 @@ const connection  = require ("./database/connection")
 const express = require ("express")
 const cors = require("cors")
 
+// Libreria para acceder a ficheros fisicos
+const path = require("path")
+
 
 // Mensaje de bienvenida
 console.log("API node red social arrancada!! conexión a la base de datos correcta")
@@ -26,11 +29,18 @@ app.use(express.urlencoded({extended:true}))
 const UserRoutes = require("./routes/user")
 const PublicationRoutes = require("./routes/publication")
 const FollowRoutes = require("./routes/follow")
+const { redirect } = require("express/lib/response")
 
+app.use("/", express.static('build', {redirect: false}))
 app.use("/api/user", UserRoutes)
 app.use("/api/publication", PublicationRoutes)
 app.use("/api/follow", FollowRoutes)
 
+
+// cargar el index del fronted
+app.get("*", (req, res, next)=>{
+    return res.sendFile(path.resolve("build/index.html"))
+})
 
 // ruta de prueba
 app.get("/ruta-prueba", (req, res) =>{
