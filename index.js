@@ -38,9 +38,18 @@ app.use("/api/follow", FollowRoutes)
 
 
 // cargar el index del fronted
-app.get("*", (req, res, next)=>{
-    return res.sendFile(path.resolve("build/index.html"))
-})
+const rateLimit = require("express-rate-limit");
+
+// Configure rate limiter: maximum of 100 requests per 15 minutes
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+});
+
+// Apply rate limiter to the route serving index.html
+app.get("*", limiter, (req, res, next) => {
+    return res.sendFile(path.resolve("build/index.html"));
+});
 
 // ruta de prueba
 app.get("/ruta-prueba", (req, res) =>{
