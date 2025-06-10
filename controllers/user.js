@@ -402,7 +402,7 @@ const upload = async (req, res) => {
         //  Actualizar el Avatar en la base de datos y guardarlo.
         const userUpdate = await User.findByIdAndUpdate(
             { _id: req.user.id },
-            { image: newImageName },
+            { $set: { image: newImageName } },
             { new: true }
         );
 
