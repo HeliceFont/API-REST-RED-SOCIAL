@@ -1,3 +1,6 @@
+// Cargar variables de entorno
+require('dotenv').config()
+
 // Importar dependencias
 const connection  = require ("./database/connection")
 const express = require ("express")
@@ -12,13 +15,13 @@ connection()
 
 // Crear servidor de Node
 const app = express()
-const puerto = 3900
+const puerto = process.env.PORT || 3900
 
 //configurar cors
 // middleware
 app.use(cors())
 
-//convertir los datos que lleguen en cada petición
+//convertir a JSON los datos que lleguen en cada petición
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 

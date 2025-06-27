@@ -2,7 +2,7 @@
 const jwt = require("jwt-simple")
 const moment = require("moment")
 // Clave secreta
-const secretKey = "mySecretKey_ClaVE_SecRETA_del_proyecto_DE_lA_RED_soCIAL_689689";
+const secretKey = process.env.API_KEY;
 
 // Crear una función para generar tokens 
 const createToken = (user) =>{
