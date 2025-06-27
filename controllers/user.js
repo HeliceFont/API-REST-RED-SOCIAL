@@ -388,14 +388,23 @@ const upload = async (req, res) => {
         }
 
         // Conseguir el nombre del archivo subido
-        const newImageName = req.file.filename
+        const newImageName = req.file.filename;
+
+        // Validate the filename to ensure it is safe
+        const validFilenamePattern = /^[a-zA-Z0-9_\-\.]+$/; // Allow alphanumeric, underscores, hyphens, and dots
+        if (!validFilenamePattern.test(newImageName)) {
+            return res.status(400).send({
+                status: "error",
+                message: "Invalid filename format"
+            });
+        }
 
         //  Actualizar el Avatar en la base de datos y guardarlo.
         const userUpdate = await User.findByIdAndUpdate(
             { _id: req.user.id },
-            { image: newImageName },
+            { $set: { image: newImageName } },
             { new: true }
-        )
+        );
 
         if (!userUpdate) {
             return res.status(500).send({
