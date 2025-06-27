@@ -1,3 +1,6 @@
+// Cargar variables de entorno
+require('dotenv').config();
+
 // Importar dependencias
 const connection  = require ("./database/connection")
 const express = require ("express")

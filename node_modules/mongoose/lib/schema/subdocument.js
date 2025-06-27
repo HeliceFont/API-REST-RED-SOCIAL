@@ -325,7 +325,7 @@ SchemaSubdocument.prototype.discriminator = function(name, schema, options) {
     schema = schema.clone();
   }
 
-  schema = discriminator(this.caster, name, schema, value);
+  schema = discriminator(this.caster, name, schema, value, null, null, options.overwriteExisting);
 
   this.caster.discriminators[name] = _createConstructor(schema, this.caster);
 
@@ -393,5 +393,6 @@ SchemaSubdocument.prototype.clone = function() {
     schematype.requiredValidator = this.requiredValidator;
   }
   schematype.caster.discriminators = Object.assign({}, this.caster.discriminators);
+  schematype._appliedDiscriminators = this._appliedDiscriminators;
   return schematype;
 };
